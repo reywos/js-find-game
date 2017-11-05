@@ -1,4 +1,4 @@
-var Game = function(){
+var Game = (function(){
   var data = {
     scoreRight:     0,
     counter:        0,
@@ -16,36 +16,36 @@ var Game = function(){
   }
 
   function rendering() {
-    view(!data.start, data.introTemp);
-    view(data.countingShow, data.countingTemp);
-    view(data.guessShow, data.guessTemp);
-    view(data.grid, data.gridTemp);
-    view(data.selectionShow, data.selectionTemp);
-    view(data.right, data.rightTemp);
-    view(data.wrong, data.wrongTemp);
-    view(data.score, data.scoreTemp);
+    renderDependeingOnData(!data.start, data.introTemp);
+    renderDependeingOnData(data.countingShow, data.countingTemp);
+    renderDependeingOnData(data.guessShow, data.guessTemp);
+    renderDependeingOnData(data.grid, data.gridTemp);
+    renderDependeingOnData(data.selectionShow, data.selectionTemp);
+    renderDependeingOnData(data.right, data.rightTemp);
+    renderDependeingOnData(data.wrong, data.wrongTemp);
+    renderDependeingOnData(data.score, data.scoreTemp);
   }
 
-  function view(bool, temp) {
-    return bool ? inDom(temp).style.display = 'block' : inDom(temp).style.display = 'none';
+  function renderDependeingOnData(bool, template) {
+    return bool ? inDom(template).style.display = 'block' : inDom(template).style.display = 'none';
   }
 
-  function randomizer(min,max) {
+  function getRandomNum(min,max) {
     return ~~(Math.random() * (max - min)) + min;
   }
 
-  function randomFirstImg() {
-    return randomizer(1, data.imgsCount);
+  function getRandomFirstImg() {
+    return getRandomNum(1, data.imgsCount);
   }
 
-  function addFirstImages() {
-    data.imgs.unshift(randomFirstImg());
+  function addFirstImage() {
+    data.imgs.unshift(getRandomFirstImg());
   }
 
   function startGame() {
     function addImgToArray(array) {
       do {
-        var randomNum = randomizer(1, data.imgsCount);
+        var randomNum = getRandomNum(1, data.imgsCount);
         var arrIndexOfRand = array[array.indexOf(randomNum)];
         if(arrIndexOfRand != randomNum) {
           array.unshift(randomNum);
@@ -78,7 +78,7 @@ var Game = function(){
       }, 1000);
       setTimeout(() => {
         clearInterval(counterInterval);
-        selections(); // Скрываем картинки и начинаем выбирать
+        selections();
       }, counterData * 1000);
     }
 
@@ -124,7 +124,7 @@ var Game = function(){
   }
 
   function imageThatNeedGuess() {
-    var randImg = data.imgs[randomizer(0, data.imgs.length)];
+    var randImg = data.imgs[getRandomNum(0, data.imgs.length)];
     var html = `<img data-guess="${randImg}" src="img/${randImg}.jpg">`;
     inDom('#t_guess').innerHTML = html;
     select();
@@ -135,7 +135,7 @@ var Game = function(){
     var rightAnswerWall = inDom(`[data-img="${selectedImg}"]`).querySelector('.walls');
 
     inDom('.grid-item').forEach(i => {
-      i.addEventListener('click', (e) => {
+      i.onclick = (e) => {
         if(e.target.getAttribute('data-img') === selectedImg) { 
           data.right = true;
           data.wrong = false;
@@ -145,25 +145,27 @@ var Game = function(){
           data.right = false;
           data.scoreRight = 0;
           data.imgs = [];
-          data.imgs.unshift(randomFirstImg());
+          data.imgs.unshift(getRandomFirstImg());
           data.counter = 0;
         }
         data.selectionShow = false;
         inDom('.grid-item').forEach(i => i.style.pointerEvents = 'none');
         rendering();
         rightAnswerWall.style.display = 'none';
-      });
+      }
     });
+  }
+
+  function init() {
+    rendering();
+    addFirstImage();
   }
 
   return {
     startGame,
-    init() {
-      rendering();
-      addFirstImages()
-    }
+    init
   }
 
-}();
+}());
 
 
